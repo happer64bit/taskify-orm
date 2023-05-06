@@ -5,13 +5,13 @@ The Task ORM module is a simple Object-Relational Mapping (ORM) library for mana
 You can install the Task ORM module using npm:
 
 ```bash
-npm install task-orm
+npm install taskify-orm
 ```
 # Usage
 You can use the Task ORM module in your project by importing it into your JavaScript or TypeScript file:
 
 ```javascript
-import TaskOrm from 'task-orm';
+import TaskOrm from 'taskify-orm';
 ```
 Once you have imported the Task ORM module, you can create a new instance of the TaskOrm class:
 
@@ -70,7 +70,7 @@ console.log(taskList);
 Here are some examples of how you can use the Task ORM module in your project:
 
 ```javascript
-import TaskOrm from 'task-orm';
+import TaskOrm from 'taskify-orm';
 
 const taskOrm = new TaskOrm('my-database.db');
 
