@@ -1,93 +1,90 @@
 import sqlite3 from 'sqlite3';
 
+type Task = {
+  id: number;
+  title: string;
+  isChecked: boolean;
+  created_at: string;
+};
+
 class TaskOrm {
-    private databaseName: string = ":memory:"; // store on memory as default
-    private db = new sqlite3.Database(this.databaseName);
+  private db: sqlite3.Database;
 
-    constructor(file: string) {
-        this.databaseName = file
+  constructor(databaseName: string) {
+    this.db = new sqlite3.Database(databaseName);
+    this.initTable();
+  }
+
+  initTable() {
+    const query = `CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, isChecked BOOLEAN, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+    this.db.run(query);
+  }
+
+  async createTask(title: string, isChecked: boolean = false): Promise<Task> {
+    const query = `INSERT INTO tasks (title, isChecked) VALUES (?, ?)`;
+    const params = [title, isChecked ? 1 : 0];
+    const { lastID } = await this.run(query, params);
+    return this.getTask(lastID);
+  }
+
+  async getTask(id: number): Promise<Task> {
+    const query = `SELECT * FROM tasks WHERE id = ?`;
+    const params = [id];
+    const rows = await this.all(query, params);
+    if (rows.length === 0) {
+      throw new Error(`Task with ID ${id} not found`);
     }
+    return rows[0];
+  }
 
-    query(query: string, params: any[]) {
-        this.db.serialize(() => {
-            const stmt = this.db.prepare(query);
-            stmt.run(params);
-            stmt.finalize();
-        });
+  async updateTask(id: number, title?: string, isChecked?: boolean): Promise<Task> {
+    const currentTask = await this.getTask(id);
+    const updatedTask: Task = {
+      ...currentTask,
+      title: title || currentTask.title,
+      isChecked: isChecked !== undefined ? isChecked : currentTask.isChecked,
+    };
+    const query = `UPDATE tasks SET title = ?, isChecked = ? WHERE id = ?`;
+    const params = [updatedTask.title, updatedTask.isChecked ? 1 : 0, id];
+    await this.run(query, params);
+    return updatedTask;
+  }
 
-        this.db.close();
-    }
+  async deleteTask(id: number): Promise<void> {
+    const query = `DELETE FROM tasks WHERE id = ?`;
+    const params = [id];
+    await this.run(query, params);
+  }
 
-    createTaskTable(name: string) {
-        const tableName = name.toString().replace(/[^a-zA-Z0-9]/g, ""); // sanitize table name
-        const query = `CREATE TABLE ${tableName} (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, isChecked TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+  async getAllTasks(): Promise<Task[]> {
+    const query = `SELECT * FROM tasks ORDER BY created_at DESC`;
+    const rows = await this.all(query);
+    return rows;
+  }
 
-        this.query(query, []);
-    }
+  async run(query: string, params: any[] = []): Promise<sqlite3.RunResult> {
+    return new Promise((resolve, reject) => {
+      this.db.run(query, params, function (err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(this);
+        }
+      });
+    });
+  }
 
-    createKey(tableName: string, title: string) {
-        const sanitizedTableName = tableName.toString().replace(/[^a-zA-Z0-9]/g, ""); // sanitize table name
-        const query = `INSERT INTO ${sanitizedTableName} (title, isChecked) VALUES (?, ?)`;
-        const params = [title, '0']; // initialize isChecked as '0' (unchecked)
-
-        this.query(query, params);
-    }
-
-    deleteKey(tableName: string, id: string) {
-        const sanitizedTableName = tableName.toString().replace(/[^a-zA-Z0-9]/g, ""); // sanitize table name
-        const query = `DELETE FROM ${sanitizedTableName} WHERE id = ?`;
-        const params = [id];
-
-        this.query(query, params);
-    }
-
-    deleteTable(tableName: string) {
-        const sanitizedTableName = tableName.toString().replace(/[^a-zA-Z0-9]/g, ""); // sanitize table name
-        const query = `DROP TABLE IF EXISTS ${sanitizedTableName}`;
-
-        this.query(query, []);
-    }
-
-    setChecked(tableName: string, id: string, isChecked: boolean) {
-        const sanitizedTableName = tableName.toString().replace(/[^a-zA-Z0-9]/g, ""); // sanitize table name
-        const query = `UPDATE ${sanitizedTableName} SET isChecked = ? WHERE id = ?`;
-        const params = [isChecked ? '1' : '0', id];
-    
-        this.query(query, params);
-    }
-    
-    async getAllTable(): Promise<string[]> {
-        const query = `SELECT table_name FROM __created__tables__log__`;
-        let result: string[] = [];
-        await new Promise((resolve, reject) => {
-            this.db.all(query, [], (err, rows) => {
-                if (err) reject(err);
-                else {
-                    // @ts-ignore
-                    result = rows.map((row) => row.table_name);
-                    // @ts-ignore
-                    resolve();
-                }
-            });
-        });
-        return result;
-    }
-
-    async fetchAllInTable(tableName: string): Promise<any[]> {
-        const sanitizedTableName = tableName.toString().replace(/[^a-zA-Z0-9]/g, ''); // sanitize table name
-        const query = `SELECT * FROM ${sanitizedTableName}`;
-
-        return new Promise((resolve, reject) => {
-            this.db.all(query, (err, rows) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(rows);
-                }
-            });
-        });
-    }
-
+  async all(query: string, params: any[] = []): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      this.db.all(query, params, function (err, rows) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
 }
 
-export default TaskOrm
+export default TaskOrm;
