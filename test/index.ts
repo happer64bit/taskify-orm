@@ -13,13 +13,15 @@ async function main() {
   // Update a task
   const updatedTask = await taskOrm.updateTask(newTask.id, 'My updated task');
 
-  // Delete a task
-  await taskOrm.deleteTask(newTask.id);
 
   // Get all tasks
   const allTasks = await taskOrm.getAllTasks();
 
-  console.log(allTasks)
+  console.log({
+    allTasks,
+    task,
+    updatedTask,
+  })
 }
 
 main();
