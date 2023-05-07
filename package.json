@@ -7,7 +7,7 @@
     "ts-node": "^10.9.1"
   },
   "name": "taskify-orm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "lib/index.ts",
   "directories": {
     "lib": "lib"
