@@ -1,95 +1,77 @@
-# Task ORM Module
-The Task ORM module is a simple Object-Relational Mapping (ORM) library for managing tasks in a SQLite database. It provides basic CRUD (Create, Read, Update, Delete) operations for managing tasks in the database.
+# TaskOrm
 
-# Installation
-You can install the Task ORM module using npm:
+TaskOrm is a simple ORM class for working with SQLite databases. It provides basic CRUD operations for a tasks table, including creating a new task, retrieving a task by ID, updating a task, deleting a task, and getting all tasks.
 
-```bash
-npm install taskify-orm
-```
-# Usage
-You can use the Task ORM module in your project by importing it into your JavaScript or TypeScript file:
+## Installation
+```npm install sqlite3 taskify-orm```
 
-```javascript
-import TaskOrm from 'taskify-orm';
-```
-Once you have imported the Task ORM module, you can create a new instance of the TaskOrm class:
-
-```javascript
-const taskOrm = new TaskOrm('my-database.db');
-```
-
-# API
-## `createTaskTable(name: string): void`
-Creates a new task table with the specified name in the database.
-
-```javascript
-taskOrm.createTaskTable('my_task_table');
-```
-## `createKey(tableId: string, title: string): void`
-Inserts a new task with the specified title into the table with the specified ID.
-
-```javascript
-taskOrm.createKey('my_task_table', 'Buy groceries');
-```
-
-## `deleteKey(tableId: string, id: string): void`
-Deletes the task with the specified ID from the table with the specified ID.
-
-```javascript
-taskOrm.deleteKey('my_task_table', '1');
-```
-## `deleteTable(tableId: string): void`
-Deletes the table with the specified ID from the database.
-
-```javascript
-taskOrm.deleteTable('my_task_table');
-```
-`setChecked(tableId: string, id: string, isChecked: boolean): void`
-Sets the isChecked value of the task with the specified ID in the table with the specified ID.
-
-```javascript
-taskOrm.setChecked('my_task_table', '1', true);
-```
-## `getAllTable(): Promise<string[]>`
-Returns a list of all the task tables in the database.
-
-```javascript
-const tableList = await taskOrm.getAllTable();
-console.log(tableList);```
-
-## `fetchAllInTable(tableId: string): Promise<any[]>`
-
-Returns a list of all the tasks in the table with the specified ID.
-
-```javascript
-const taskList = await taskOrm.fetchAllInTable('my_task_table');
-console.log(taskList);
-```
-# Examples
-Here are some examples of how you can use the Task ORM module in your project:
-
+## Usage
 ```javascript
 import TaskOrm from 'taskify-orm';
 
-const taskOrm = new TaskOrm('my-database.db');
+// Create a new instance of TaskOrm by passing the database name as an argument
+const taskOrm = new TaskOrm('myDatabase.sqlite3');
 
-// Create a new task table
-taskOrm.createTaskTable('my_task_table');
+// Create a new task
+const newTask = await taskOrm.createTask('My new task');
 
-// Insert a new task into the table
-taskOrm.createKey('my_task_table', 'Buy groceries');
+// Get a task by ID
+const task = await taskOrm.getTask(newTask.id);
 
-// Set the isChecked value of a task to true
-taskOrm.setChecked('my_task_table', '1', true);
+// Update a task
+const updatedTask = await taskOrm.updateTask(newTask.id, { title: 'My updated task' });
 
-// Fetch all tasks from the table
-const taskList = await taskOrm.fetchAllInTable('my_task_table');
-console.log(taskList);
+// Delete a task
+await taskOrm.deleteTask(newTask.id);
 
-// Delete a task from the table
-taskOrm.deleteKey('my_task_table', '1');
-
-// Delete the task table
-taskOrm.deleteTable('my_task_table');
+// Get all tasks
+const allTasks = await taskOrm.getAllTasks();
 ```
+
+## API
+
+### `constructor(databaseName: string)`
+Creates a new instance of TaskOrm and connects to the specified SQLite database.
+
+`databaseName` - the name of the SQLite database to connect to
+
+### `initTable()`
+Initializes the tasks table if it doesn't already exist.
+
+### `async createTask(title: string, isChecked?: boolean): Promise<Task>`
+Creates a new task with the specified title and isChecked value. Returns the newly created task.
+
+`title` - the title of the new task
+`isChecked` - the checked state of the new task (default is false)
+### `async getTask(id: number): Promise<Task>`
+Retrieves a task by ID. Returns the task with the specified ID.
+
+`id` - the ID of the task to retrieve
+### `async updateTask(id: number, taskData: Partial<Task>): Promise<Task>`
+Updates a task with the specified ID using the provided taskData. Returns the updated task.
+
+`id` - the ID of the task to update
+taskData - an object containing the updated properties of the task (title and/or isChecked)
+
+`async deleteTask(id: number): Promise<void>`
+Deletes a task with the specified ID.
+
+`id` - the ID of the task to delete
+
+### `async getAllTasks(): Promise<Task[]>`
+Retrieves all tasks from the database. Returns an array of tasks.
+
+### `async run(query: string, params: any[] = []): Promise<sqlite3.RunResult>`
+Executes the specified SQL query with optional parameters. Returns a RunResult object.
+
+`query` - the SQL query to execute
+`params` - an array of parameters to replace any placeholders in the query
+### `async all(query: string, params: any[] = []): Promise<any[]>`
+
+Retrieves all rows from the database that match the specified SQL query with optional parameters. Returns an array of objects.
+
+`query` - the SQL query to execute
+`params` - an array of parameters to replace any placeholders in the query
+
+
+
