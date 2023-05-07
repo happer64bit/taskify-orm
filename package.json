@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "jest": "^29.5.0",
@@ -8,7 +8,7 @@
     "typescript": "^5.0.4"
   },
   "name": "taskify-orm",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "lib/index.ts",
   "directories": {
     "lib": "lib"
@@ -23,5 +23,5 @@
   ],
   "author": "Happer64Bit",
   "license": "MIT",
-  "description": ""
+  "description": "",
 }
