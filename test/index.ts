@@ -9,7 +9,7 @@ async function main() {
 
   // Get a task by ID
   const task = await taskOrm.getTask(newTask.id);
-
+  
   // Update a task
   const updatedTask = await taskOrm.updateTask(newTask.id, 'My updated task');
 
@@ -18,6 +18,8 @@ async function main() {
 
   // Get all tasks
   const allTasks = await taskOrm.getAllTasks();
+
+  console.log(allTasks)
 }
 
 main();
