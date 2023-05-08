@@ -1,13 +1,13 @@
 import sqlite3 from 'sqlite3';
 
-type Task = {
+type Taskify = {
   id: number;
   title: string;
   isChecked: boolean;
   created_at: string;
 };
 
-class TaskOrm {
+class TaskifyOrm {
   private db: sqlite3.Database;
 
   constructor(databaseName: string) {
@@ -15,20 +15,20 @@ class TaskOrm {
     this.initTable();
   }
 
-  initTable() {
-    const query = `CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, isChecked BOOLEAN, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+  initTable(tableName: string = 'tasks') {
+    const query = `CREATE TABLE IF NOT EXISTS ${tableName} (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, isChecked BOOLEAN, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
     this.db.run(query);
   }
 
-  async createTask(title: string, isChecked: boolean = false): Promise<Task> {
-    const query = `INSERT INTO tasks (title, isChecked) VALUES (?, ?)`;
+  async createTask(title: string, isChecked: boolean = false, tableName: string = 'tasks'): Promise<Taskify> {
+    const query = `INSERT INTO ${tableName} (title, isChecked) VALUES (?, ?)`;
     const params = [title, isChecked ? 1 : 0];
     const { lastID } = await this.run(query, params);
-    return this.getTask(lastID);
+    return this.getTask(lastID, tableName);
   }
 
-  async getTask(id: number): Promise<Task> {
-    const query = `SELECT * FROM tasks WHERE id = ?`;
+  async getTask(id: number, tableName: string = 'tasks'): Promise<Taskify> {
+    const query = `SELECT * FROM ${tableName} WHERE id = ?`;
     const params = [id];
     const rows = await this.all(query, params);
     if (rows.length === 0) {
@@ -37,27 +37,27 @@ class TaskOrm {
     return rows[0];
   }
 
-  async updateTask(id: number, title?: string, isChecked?: boolean): Promise<Task> {
-    const currentTask = await this.getTask(id);
-    const updatedTask: Task = {
+  async updateTask(id: number, title?: string, isChecked?: boolean, tableName: string = 'tasks'): Promise<Taskify> {
+    const currentTask = await this.getTask(id, tableName);
+    const updatedTask: Taskify = {
       ...currentTask,
       title: title || currentTask.title,
       isChecked: isChecked !== undefined ? isChecked : currentTask.isChecked,
     };
-    const query = `UPDATE tasks SET title = ?, isChecked = ? WHERE id = ?`;
+    const query = `UPDATE ${tableName} SET title = ?, isChecked = ? WHERE id = ?`;
     const params = [updatedTask.title, updatedTask.isChecked ? 1 : 0, id];
     await this.run(query, params);
     return updatedTask;
   }
 
-  async deleteTask(id: number): Promise<void> {
-    const query = `DELETE FROM tasks WHERE id = ?`;
+  async deleteTask(id: number, tableName: string = 'tasks'): Promise<void> {
+    const query = `DELETE FROM ${tableName} WHERE id = ?`;
     const params = [id];
     await this.run(query, params);
   }
 
-  async getAllTasks(): Promise<Task[]> {
-    const query = `SELECT * FROM tasks ORDER BY created_at DESC`;
+  async getAllTasks(tableName: string = 'tasks'): Promise<Taskify[]> {
+    const query = `SELECT * FROM ${tableName} ORDER BY created_at DESC`;
     const rows = await this.all(query);
     return rows;
   }
@@ -87,4 +87,4 @@ class TaskOrm {
   }
 }
 
-export default TaskOrm;
+export default TaskifyOrm;

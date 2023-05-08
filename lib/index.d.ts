@@ -1,32 +1,32 @@
 import sqlite3 from 'sqlite3';
 
-declare interface Task {
+interface Taskify {
   id: number;
   title: string;
   isChecked: boolean;
   created_at: string;
 }
 
-declare class TaskOrm {
+declare class TaskifyOrm {
   private db: sqlite3.Database;
 
   constructor(databaseName: string);
 
-  private initTable(): void;
+  initTable(tableName?: string): void;
 
-  createTask(title: string, isChecked?: boolean): Promise<Task>;
+  createTask(title: string, isChecked?: boolean, tableName?: string): Promise<Taskify>;
 
-  getTask(id: number): Promise<Task>;
+  getTask(id: number, tableName?: string): Promise<Taskify>;
 
-  updateTask(id: number, title?: string, isChecked?: boolean): Promise<Task>;
+  updateTask(id: number, title?: string, isChecked?: boolean, tableName?: string): Promise<Taskify>;
 
-  deleteTask(id: number): Promise<void>;
+  deleteTask(id: number, tableName?: string): Promise<void>;
 
-  getAllTasks(): Promise<Task[]>;
+  getAllTasks(tableName?: string): Promise<Taskify[]>;
 
-  private run(query: string, params?: any[]): Promise<sqlite3.RunResult>;
+  run(query: string, params?: any[]): Promise<sqlite3.RunResult>;
 
-  private all(query: string, params?: any[]): Promise<any[]>;
+  all(query: string, params?: any[]): Promise<any[]>;
 }
 
-export default TaskOrm;
+export default TaskifyOrm;
